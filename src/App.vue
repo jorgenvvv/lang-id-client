@@ -1,5 +1,30 @@
 <template>
   <div id="app">
+    <b-navbar type="is-primary">
+      <template slot="brand">
+        <b-navbar-item tag="div">
+          <h4 class="brand title is-4 has-text-white">{{ $t('brand_text') }}</h4>
+        </b-navbar-item>
+      </template>
+      <template slot="start">
+        <!-- <b-navbar-item href="#">
+          About
+        </b-navbar-item> -->
+      </template>
+      <template slot="end">
+        <b-navbar-dropdown right arrowless>
+          <template slot="label">
+            <b-icon icon="web"></b-icon>
+          </template>
+          <b-navbar-item @click="changeLocale('en')">
+            English
+          </b-navbar-item>
+          <b-navbar-item @click="changeLocale('et')">
+            Eesti
+          </b-navbar-item>
+        </b-navbar-dropdown>
+      </template>
+    </b-navbar>
     <div class="container">
       <Home />
     </div>
@@ -12,6 +37,12 @@ export default {
   name: 'app',
   components: {
     Home
+  },
+
+  methods: {
+    changeLocale(locale) {
+      this.$i18n.locale = locale;
+    }
   }
 };
 </script>
@@ -71,4 +102,8 @@ $link-focus-border: $primary;
 // Import Bulma and Buefy styles
 @import '~bulma';
 @import '~buefy/src/scss/buefy';
+
+.brand {
+  font-family: 'Dancing Script', cursive;
+}
 </style>

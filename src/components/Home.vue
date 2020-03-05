@@ -3,7 +3,7 @@
     <div class="container">
       <div class="columns">
         <div class="column has-text-centered">
-          <h4 class="title is-4">Language Identification</h4>
+          <h4 class="title is-4">{{ $t('language_identification') }}</h4>
           <div>
             <b-button
               type="is-primary"
@@ -11,31 +11,31 @@
               icon-left="microphone"
               @click="recordClip()"
             >
-              Record a clip
+              {{ $t('button.record_clip') }}
             </b-button>
             <div>
-              or
+              {{ $t('or') }}
             </div>
             <b-field class="file-select-field file is-centered" position="is-centered">
               <b-upload v-model="file" @input="fileInputSelected()">
                 <a class="button is-primary is-outlined" @click="reset()">
                   <b-icon icon="paperclip"></b-icon>
-                  <span>Select a file</span>
+                  <span>{{ $t('button.select_file') }}</span>
                 </a>
               </b-upload>
               <span class="file-name" :class="{'has-text-danger': fileIsInvalid}" v-if="file">
                 {{ file.name }}
               </span>
-              <b-tooltip class="file-tooltip" v-if="fileIsInvalid" type="is-danger" animater label="Invalid file type" position="is-right">
+              <b-tooltip class="file-tooltip" v-if="fileIsInvalid" type="is-danger" animater :label="$t('error.invalid_file_type')" position="is-right">
                 <b-icon type="is-danger" icon="alert-circle-outline"></b-icon>
               </b-tooltip>
             </b-field>
-            <span class="has-text-grey-light is-size-7">Allowed file extensions: {{ allowedFileExtensionsString }}.</span>
+            <span class="has-text-grey-light is-size-7">{{ $t('allowed_file_extensions') }}: {{ allowedFileExtensionsString }}.</span>
           </div>
           <div>
-            <div v-if="recording || file || isRecording">
+            <div v-if="(recording || file || isRecording) && !fileIsInvalid">
               <hr>
-              <h2 class="subtitle has-text-centered">Input Speech</h2>
+              <h2 class="input-speech-title subtitle has-text-centered">{{ $t('input_speech') }}</h2>
             </div>
             <div v-if="isRecording || recording">
               <div class="is-size-5">
@@ -43,7 +43,7 @@
                 <b-icon icon="microphone" class="vertical-icon"></b-icon
                 >{{ formattedRecordingDuration }}
                 <b-button v-if="isRecording" @click="stopRecording()">
-                  Stop
+                  {{ $t('button.stop') }}
                 </b-button>
               </div>
             </div>
@@ -59,14 +59,14 @@
               type="is-primary"
               v-if="!identificationResults.length && (file || recording) && !fileIsInvalid"
               @click="uploadFile()"
-              >Identify Language</b-button
+              >{{ $t('button.identify_language') }}</b-button
             >
           </div>
         </div>
       </div>
       <hr v-if="identificationResults.length" />
       <div ref="identificationResults" v-if="identificationResults.length">
-        <h2 class="subtitle has-text-centered">Identification Results</h2>
+        <h2 class="subtitle has-text-centered">{{ $t('identification_results') }}</h2>
         <div class="columns">
           <div class="column is-4 is-offset-4 has-text-centered">
             <b-notification
@@ -292,5 +292,9 @@ export default {
 .file-tooltip {
   display: flex;
   align-items: center;
+}
+
+.input-speech-title {
+  margin-bottom: 10px;
 }
 </style>
