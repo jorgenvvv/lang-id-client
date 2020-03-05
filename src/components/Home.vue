@@ -4,7 +4,7 @@
       <div class="columns">
         <div class="column has-text-centered">
           <h4 class="title is-4">Language Identification</h4>
-          <div v-if="!isRecording && !hasRecording">
+          <div>
             <b-button
               type="is-primary"
               size="is-large"
@@ -16,20 +16,28 @@
             <div>
               or
             </div>
-            <b-field class="file is-centered" position="is-centered">
+            <b-field class="file-select-field file is-centered" position="is-centered">
               <b-upload v-model="file" @input="fileInputSelected()">
-                <a class="button is-primary is-outlined">
+                <a class="button is-primary is-outlined" @click="reset()">
                   <b-icon icon="paperclip"></b-icon>
                   <span>Select a file</span>
                 </a>
               </b-upload>
-              <span class="file-name" v-if="file">
+              <span class="file-name" :class="{'has-text-danger': fileIsInvalid}" v-if="file">
                 {{ file.name }}
               </span>
+              <b-tooltip class="file-tooltip" v-if="fileIsInvalid" type="is-danger" animater label="Invalid file type" position="is-right">
+                <b-icon type="is-danger" icon="alert-circle-outline"></b-icon>
+              </b-tooltip>
             </b-field>
+            <span class="has-text-grey-light is-size-7">Allowed file extensions: {{ allowedFileExtensionsString }}.</span>
           </div>
           <div>
-            <div v-if="(isRecording || hasRecording) && !inputFromFile">
+            <div v-if="recording || file || isRecording">
+              <hr>
+              <h2 class="subtitle has-text-centered">Input Speech</h2>
+            </div>
+            <div v-if="isRecording || recording">
               <div class="is-size-5">
                 <span v-if="isRecording">🔴</span>
                 <b-icon icon="microphone" class="vertical-icon"></b-icon
@@ -39,32 +47,25 @@
                 </b-button>
               </div>
             </div>
-            <div class="recording-player" v-if="hasRecording">
+            <div class="audio-player" v-if="(recording || file) && !fileIsInvalid">
               <audio
                 id="player"
                 controls
                 controlsList="nodownload"
-                :src="recordedAudioURL"
+                :src="currentAudioURL"
               ></audio>
             </div>
             <b-button
               type="is-primary"
-              v-if="!identificationResults.length && hasRecording"
+              v-if="!identificationResults.length && (file || recording) && !fileIsInvalid"
               @click="uploadFile()"
               >Identify Language</b-button
-            >
-            <b-button
-              type="is-primary"
-              size="is-large"
-              v-if="identificationResults.length"
-              @click="tryAgain()"
-              >Try Again</b-button
             >
           </div>
         </div>
       </div>
       <hr v-if="identificationResults.length" />
-      <div v-if="identificationResults.length">
+      <div ref="identificationResults" v-if="identificationResults.length">
         <h2 class="subtitle has-text-centered">Identification Results</h2>
         <div class="columns">
           <div class="column is-4 is-offset-4 has-text-centered">
@@ -118,16 +119,20 @@ export default {
   data() {
     return {
       file: null,
+      recording: null,
       identificationResults: [],
-      recordedAudioURL: null,
       isRecording: false,
-      hasRecording: false,
       mediaRecorder: null,
       recordingStartTime: null,
       recordingDuration: null,
       isLoadingResults: false,
-      inputFromFile: false
+      allowedFileExtensions: [],
+      fileIsInvalid: false
     };
+  },
+
+  created() {
+    this.loadAllowedFileExtensions();
   },
 
   computed: {
@@ -135,15 +140,15 @@ export default {
       return this.recordingDuration ? this.recordingDuration : this.getRecordingDuration(0);
     },
 
-    downloadLinkURL() {
-      return this.hasRecording ? this.recordedAudioURL : null;
-    },
-
     additionalIdentificationResults() {
       let modifiedResults = [...this.identificationResults];
       modifiedResults.shift();
 
       return modifiedResults;
+    },
+
+    allowedFileExtensionsString() {
+      return this.allowedFileExtensions.join(', ');
     }
   },
 
@@ -151,16 +156,25 @@ export default {
     uploadFile() {
       this.isLoadingResults = true;
 
-      const fileName = this.file.name ? this.file.name : `rec_${Date.now()}.opus`;
+      let uploadableFile;
+      if (this.file) uploadableFile = this.file;
+      if (this.recording) uploadableFile = this.recording;
+
+      const fileName = uploadableFile.name ? uploadableFile.name : `rec_${Date.now()}.opus`;
 
       let formData = new FormData();
-      formData.append('file', this.file, fileName);
+      formData.append('file', uploadableFile, fileName);
 
       axios
         .post(process.env.VUE_APP_API_URL + '/api/identify-language', formData)
         .then(response => {
           this.identificationResults = response.data;
           this.isLoadingResults = false;
+
+          this.$nextTick()
+          .then(() => {
+            this.$refs.identificationResults.scrollIntoView();
+          });
         })
         .catch(error => {
           // TODO: handle error
@@ -169,6 +183,7 @@ export default {
     },
 
       recordClip() {
+        this.reset();
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
           this.mediaRecorder = new MediaRecorder(stream);
           this.mediaRecorder.start();
@@ -190,9 +205,8 @@ export default {
             const audioBlob = new Blob(audioChunks);
             const audioUrl = URL.createObjectURL(audioBlob);
   
-            this.recordedAudioURL = audioUrl;
-            this.file = audioBlob;
-            this.hasRecording = true;
+            this.currentAudioURL = audioUrl;
+            this.recording = audioBlob;
   
             clearInterval(timer);
           });
@@ -225,12 +239,30 @@ export default {
       return hours + ':' + minutes + ':' + seconds + '.' + milliseconds;
     },
 
+    reset() {
+        this.recording = null;
+        this.file = null;
+        this.identificationResults = [];
+    },
+
     fileInputSelected() {
-      this.inputFromFile = true;
+      const fileExtension = this.file.name.split('.').pop().trim();
+      if (!this.allowedFileExtensions.includes(fileExtension)) {
+        this.fileIsInvalid = true;
+        return
+      }
+
       const audioUrl = URL.createObjectURL(this.file);
 
-      this.recordedAudioURL = audioUrl;
-      this.hasRecording = true;
+      this.fileIsInvalid = false;
+      this.currentAudioURL = audioUrl;
+    },
+
+    loadAllowedFileExtensions() {
+      axios.get(process.env.VUE_APP_API_URL + '/api/allowed-files')
+      .then(response => {
+        this.allowedFileExtensions = response.data;
+      })
     }
   }
 };
@@ -244,12 +276,21 @@ export default {
   vertical-align: middle;
 }
 
-.recording-player {
+.audio-player {
   margin-top: 15px;
   margin-bottom: 15px;
 }
 
 .additional-result-box {
   padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+}
+
+.file-select-field {
+  margin-bottom: 0px !important;
+}
+
+.file-tooltip {
+  display: flex;
+  align-items: center;
 }
 </style>
