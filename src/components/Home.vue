@@ -26,11 +26,17 @@
               <span class="file-name" :class="{'has-text-danger': fileIsInvalid}" v-if="file">
                 {{ file.name }}
               </span>
-              <b-tooltip class="file-tooltip" v-if="fileIsInvalid" type="is-danger" animater :label="$t('error.invalid_file_type')" position="is-right">
+              <b-tooltip class="file-tooltip" v-if="file && fileIsInvalid" type="is-danger" animater :label="$t('error.invalid_file_type')" position="is-right">
                 <b-icon type="is-danger" icon="alert-circle-outline"></b-icon>
               </b-tooltip>
             </b-field>
-            <span class="has-text-grey-light is-size-7">{{ $t('allowed_file_extensions') }}: {{ allowedFileExtensionsString }}.</span>
+            <div class="file-url-field column is-4 is-offset-4 is-size-7">
+              <a v-if="!showFileURLInput" @click="showFileURLInput = true">{{ $t('button.insert_file_url') }}</a>
+              <b-field v-if="showFileURLInput" :type="{'is-danger': fileIsInvalid}">
+                <b-input :placeholder="$t('file_url')" v-model="inputFileURL" @input="fileUrlInput()"></b-input>
+              </b-field>
+            </div>
+            <div class="has-text-grey-light is-size-7">{{ $t('allowed_file_extensions') }}: {{ allowedFileExtensionsString }}.</div>
           </div>
           <div>
             <div v-if="(recording || file || isRecording) && !fileIsInvalid">
@@ -47,7 +53,7 @@
                 </b-button>
               </div>
             </div>
-            <div class="audio-player" v-if="(recording || file) && !fileIsInvalid">
+            <div class="audio-player" v-if="(recording || file || inputFileURL) && !fileIsInvalid">
               <audio
                 id="player"
                 controls
@@ -120,6 +126,7 @@ export default {
     return {
       file: null,
       recording: null,
+      currentAudioURL: null,
       identificationResults: [],
       isRecording: false,
       mediaRecorder: null,
@@ -127,7 +134,9 @@ export default {
       recordingDuration: null,
       isLoadingResults: false,
       allowedFileExtensions: [],
-      fileIsInvalid: false
+      fileIsInvalid: false,
+      showFileURLInput: false,
+      inputFileURL: null
     };
   },
 
@@ -263,6 +272,23 @@ export default {
       .then(response => {
         this.allowedFileExtensions = response.data;
       })
+    },
+
+    fileUrlInput() {
+      this.currentAudioURL = this.inputFileURL;
+      this.file = null;
+      const urlFileExtension = this.currentAudioURL.split('.').pop()
+      if (!this.allowedFileExtensions.includes(urlFileExtension)) {
+        this.fileIsInvalid = true;
+      } else {
+        this.fileIsInvalid = false;
+        this.identificationResults = [];
+        axios.get(this.currentAudioURL, { responseType: 'arraybuffer' })
+        .then(response => {
+          const fileName = this.currentAudioURL.substring(this.currentAudioURL.lastIndexOf('/') + 1);
+          this.file = new File([response.data], fileName);
+        });
+      }
     }
   }
 };
@@ -287,6 +313,10 @@ export default {
 
 .file-select-field {
   margin-bottom: 0px !important;
+}
+
+.file-url-field {
+  padding-bottom: 0px !important;
 }
 
 .file-tooltip {
