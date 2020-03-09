@@ -16,32 +16,60 @@
             <div>
               {{ $t('or') }}
             </div>
-            <b-field class="file-select-field file is-centered" position="is-centered">
+            <b-field
+              class="file-select-field file is-centered"
+              position="is-centered"
+            >
               <b-upload v-model="file" @input="fileInputSelected()">
                 <a class="button is-primary is-outlined" @click="reset()">
                   <b-icon icon="paperclip"></b-icon>
                   <span>{{ $t('button.select_file') }}</span>
                 </a>
               </b-upload>
-              <span class="file-name" :class="{'has-text-danger': fileIsInvalid}" v-if="file">
+              <span
+                class="file-name"
+                :class="{ 'has-text-danger': fileIsInvalid }"
+                v-if="file"
+              >
                 {{ file.name }}
               </span>
-              <b-tooltip class="file-tooltip" v-if="file && fileIsInvalid" type="is-danger" animater :label="$t('error.invalid_file_type')" position="is-right">
+              <b-tooltip
+                class="file-tooltip"
+                v-if="file && fileIsInvalid"
+                type="is-danger"
+                animater
+                :label="$t('error.invalid_file_type')"
+                position="is-right"
+              >
                 <b-icon type="is-danger" icon="alert-circle-outline"></b-icon>
               </b-tooltip>
             </b-field>
             <div class="file-url-field column is-4 is-offset-4 is-size-7">
-              <a v-if="!showFileURLInput" @click="showFileURLInput = true">{{ $t('button.insert_file_url') }}</a>
-              <b-field v-if="showFileURLInput" :type="{'is-danger': fileIsInvalid}">
-                <b-input :placeholder="$t('file_url')" v-model="inputFileURL" @input="fileUrlInput()"></b-input>
+              <a v-if="!showFileURLInput" @click="showFileURLInput = true">{{
+                $t('button.insert_file_url')
+              }}</a>
+              <b-field
+                v-if="showFileURLInput"
+                :type="{ 'is-danger': fileIsInvalid }"
+              >
+                <b-input
+                  :placeholder="$t('file_url')"
+                  v-model="inputFileURL"
+                  @input="fileUrlInput()"
+                ></b-input>
               </b-field>
             </div>
-            <div class="has-text-grey-light is-size-7">{{ $t('allowed_file_extensions') }}: {{ allowedFileExtensionsString }}.</div>
+            <div class="has-text-grey-light is-size-7">
+              {{ $t('allowed_file_extensions') }}:
+              {{ allowedFileExtensionsString }}.
+            </div>
           </div>
           <div>
             <div v-if="(recording || file || isRecording) && !fileIsInvalid">
-              <hr>
-              <h2 class="input-speech-title subtitle has-text-centered">{{ $t('input_speech') }}</h2>
+              <hr />
+              <h2 class="input-speech-title subtitle has-text-centered">
+                {{ $t('input_speech') }}
+              </h2>
             </div>
             <div v-if="isRecording || recording">
               <div class="is-size-5">
@@ -53,17 +81,49 @@
                 </b-button>
               </div>
             </div>
-            <div class="audio-player" v-if="(recording || file || inputFileURL) && !fileIsInvalid">
-              <audio
-                id="player"
-                controls
-                controlsList="nodownload"
-                :src="currentAudioURL"
-              ></audio>
+            <div v-if="(recording || file || inputFileURL) && !fileIsInvalid">
+              <b-button rounded @click="togglePlay()">
+                <b-icon v-if="!isPlaying" icon="play"></b-icon>
+                <b-icon v-if="isPlaying" icon="pause"></b-icon>
+              </b-button>
+              <b-button
+                rounded
+                @click="
+                  wavesurfer.stop();
+                  isPlaying = false;
+                "
+              >
+                <b-icon icon="stop"></b-icon>
+              </b-button>
+              <b-button rounded @click="wavesurfer.skipBackward()">
+                <b-icon icon="rewind"></b-icon>
+              </b-button>
+              <b-button rounded @click="wavesurfer.skipForward()">
+                <b-icon icon="fast-forward"></b-icon>
+              </b-button>
+            </div>
+            <div class="waveform-player-container">
+              <div
+                v-show="(recording || file || inputFileURL) && !fileIsInvalid"
+                class="is-size-5 player-current-time"
+              >
+                {{ wavesurferCurrentTime }}
+              </div>
+              <div id="waveform"></div>
+              <div
+                v-show="(recording || file || inputFileURL) && !fileIsInvalid"
+                class="is-size-5 player-duration"
+              >
+                {{ wavesurferDuration }}
+              </div>
             </div>
             <b-button
               type="is-primary"
-              v-if="!identificationResults.length && (file || recording) && !fileIsInvalid"
+              v-if="
+                !identificationResults.length &&
+                  (file || recording) &&
+                  !fileIsInvalid
+              "
               @click="uploadFile()"
               >{{ $t('button.identify_language') }}</b-button
             >
@@ -72,7 +132,9 @@
       </div>
       <hr v-if="identificationResults.length" />
       <div ref="identificationResults" v-if="identificationResults.length">
-        <h2 class="subtitle has-text-centered">{{ $t('identification_results') }}</h2>
+        <h2 class="subtitle has-text-centered">
+          {{ $t('identification_results') }}
+        </h2>
         <div class="columns">
           <div class="column is-4 is-offset-4 has-text-centered">
             <b-notification
@@ -82,7 +144,9 @@
               :closable="false"
             >
               <div class="has-text-centered">
-                <p class="is-size-5">{{ identificationResults[0].language.name }}</p>
+                <p class="is-size-5">
+                  {{ identificationResults[0].language.name }}
+                </p>
                 <p>
                   {{ formatPercentage(identificationResults[0].probability) }}%
                 </p>
@@ -118,6 +182,8 @@
 
 <script>
 import axios from 'axios';
+import WaveSurfer from 'wavesurfer.js';
+import MicrophonePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.microphone';
 
 export default {
   name: 'Home',
@@ -136,7 +202,11 @@ export default {
       allowedFileExtensions: [],
       fileIsInvalid: false,
       showFileURLInput: false,
-      inputFileURL: null
+      inputFileURL: null,
+      wavesurfer: null,
+      isPlaying: false,
+      wavesurferCurrentTime: '0:00',
+      wavesurferDuration: '0:00'
     };
   },
 
@@ -146,7 +216,9 @@ export default {
 
   computed: {
     formattedRecordingDuration() {
-      return this.recordingDuration ? this.recordingDuration : this.getRecordingDuration(0);
+      return this.recordingDuration
+        ? this.recordingDuration
+        : this.getRecordingDuration(0);
     },
 
     additionalIdentificationResults() {
@@ -169,7 +241,9 @@ export default {
       if (this.file) uploadableFile = this.file;
       if (this.recording) uploadableFile = this.recording;
 
-      const fileName = uploadableFile.name ? uploadableFile.name : `rec_${Date.now()}.opus`;
+      const fileName = uploadableFile.name
+        ? uploadableFile.name
+        : `rec_${Date.now()}.opus`;
 
       let formData = new FormData();
       formData.append('file', uploadableFile, fileName);
@@ -180,8 +254,7 @@ export default {
           this.identificationResults = response.data;
           this.isLoadingResults = false;
 
-          this.$nextTick()
-          .then(() => {
+          this.$nextTick().then(() => {
             this.$refs.identificationResults.scrollIntoView();
           });
         })
@@ -191,40 +264,28 @@ export default {
         });
     },
 
-      recordClip() {
-        this.reset();
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-          this.mediaRecorder = new MediaRecorder(stream);
-          this.mediaRecorder.start();
-          this.isRecording = true;
-          this.recordingStartTime = Date.now();
-  
-          let timer = setInterval(() => {
-            this.recordingDuration = this.getRecordingDuration(
-              Math.abs(this.recordingStartTime - Date.now())
-            );
-          }, 100);
-  
-          const audioChunks = [];
-          this.mediaRecorder.addEventListener('dataavailable', event => {
-            audioChunks.push(event.data);
-          });
-  
-          this.mediaRecorder.addEventListener('stop', () => {
-            const audioBlob = new Blob(audioChunks);
-            const audioUrl = URL.createObjectURL(audioBlob);
-  
-            this.currentAudioURL = audioUrl;
-            this.recording = audioBlob;
-  
-            clearInterval(timer);
-          });
-        });
-      },
+    recordClip() {
+      this.reset();
+
+      if (!this.wavesurfer) {
+        this.createWaveSurfer(true);
+      } else {
+        if (!this.wavesurfer.microphone) {
+          this.wavesurfer.destroy();
+          this.createWaveSurfer(true);
+        }
+      }
+
+      this.wavesurfer.microphone.start();
+      this.wavesurfer.microphone.on('deviceReady', this.processMicrophoneStream);
+    },
 
     stopRecording() {
       this.isRecording = false;
       this.mediaRecorder.stop();
+      this.wavesurfer.microphone.stop();
+      // Remove event, otherwise these events keep collecting and firing
+      this.wavesurfer.microphone.un('deviceReady', this.processMicrophoneStream);
     },
 
     tryAgain() {
@@ -233,6 +294,13 @@ export default {
 
     formatPercentage(percentage) {
       return parseFloat(percentage * 100).toFixed(2);
+    },
+
+    formatTime(time) {
+      return [
+        Math.floor((time % 3600) / 60), // minutes
+        ('00' + Math.floor(time % 60)).slice(-2) // seconds
+      ].join(':');
     },
 
     getRecordingDuration(duration) {
@@ -249,46 +317,130 @@ export default {
     },
 
     reset() {
-        this.recording = null;
-        this.file = null;
-        this.identificationResults = [];
+      this.recording = null;
+      this.file = null;
+      this.identificationResults = [];
     },
 
     fileInputSelected() {
-      const fileExtension = this.file.name.split('.').pop().trim();
+      const fileExtension = this.file.name
+        .split('.')
+        .pop()
+        .trim();
       if (!this.allowedFileExtensions.includes(fileExtension)) {
         this.fileIsInvalid = true;
-        return
+        return;
       }
+
+      if (!this.wavesurfer) this.createWaveSurfer();
 
       const audioUrl = URL.createObjectURL(this.file);
 
+      this.wavesurfer.load(audioUrl);
       this.fileIsInvalid = false;
       this.currentAudioURL = audioUrl;
     },
 
     loadAllowedFileExtensions() {
-      axios.get(process.env.VUE_APP_API_URL + '/api/allowed-files')
-      .then(response => {
-        this.allowedFileExtensions = response.data;
-      })
+      axios
+        .get(process.env.VUE_APP_API_URL + '/api/allowed-files')
+        .then(response => {
+          this.allowedFileExtensions = response.data;
+        });
     },
 
     fileUrlInput() {
       this.currentAudioURL = this.inputFileURL;
       this.file = null;
-      const urlFileExtension = this.currentAudioURL.split('.').pop()
+      const urlFileExtension = this.currentAudioURL.split('.').pop();
       if (!this.allowedFileExtensions.includes(urlFileExtension)) {
         this.fileIsInvalid = true;
       } else {
         this.fileIsInvalid = false;
         this.identificationResults = [];
-        axios.get(this.currentAudioURL, { responseType: 'arraybuffer' })
-        .then(response => {
-          const fileName = this.currentAudioURL.substring(this.currentAudioURL.lastIndexOf('/') + 1);
-          this.file = new File([response.data], fileName);
-        });
+        axios
+          .get(this.currentAudioURL, { responseType: 'arraybuffer' })
+          .then(response => {
+            const fileName = this.currentAudioURL.substring(
+              this.currentAudioURL.lastIndexOf('/') + 1
+            );
+            this.file = new File([response.data], fileName);
+          });
       }
+    },
+
+    createWaveSurfer(microphone = false) {
+      this.wavesurfer = WaveSurfer.create({
+        container: '#waveform',
+        responsive: true,
+        hideScrollbar: true
+      });
+
+      if (microphone)
+        this.wavesurfer
+          .addPlugin(MicrophonePlugin.create())
+          .initPlugin('microphone');
+
+      this.wavesurfer.on('audioprocess', () => {
+        this.wavesurferCurrentTime = this.formatTime(
+          this.wavesurfer.getCurrentTime()
+        );
+      });
+
+      this.wavesurfer.on('seek', () => {
+        this.wavesurferCurrentTime = this.formatTime(
+          this.wavesurfer.getCurrentTime()
+        );
+      });
+
+      this.wavesurfer.on('ready', () => {
+        this.wavesurferDuration = this.formatTime(
+          this.wavesurfer.getDuration()
+        );
+      });
+
+      this.wavesurfer.on('finish', () => {
+        this.isPlaying = false;
+      });
+    },
+
+    togglePlay() {
+      if (this.isPlaying) {
+        this.wavesurfer.pause();
+        this.isPlaying = false;
+      } else {
+        this.wavesurfer.play();
+        this.isPlaying = true;
+      }
+    },
+
+    processMicrophoneStream(stream) {
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.isRecording = true;
+      this.recordingStartTime = Date.now();
+      this.mediaRecorder.start();
+
+      const timer = setInterval(() => {
+        this.recordingDuration = this.getRecordingDuration(
+          Math.abs(this.recordingStartTime - Date.now())
+        );
+      }, 100);
+
+      const audioChunks = [];
+      this.mediaRecorder.addEventListener('dataavailable', event => {
+        audioChunks.push(event.data);
+      });
+
+      this.mediaRecorder.addEventListener('stop', () => {
+        const audioBlob = new Blob(audioChunks);
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        this.currentAudioURL = audioUrl;
+        this.recording = audioBlob;
+        this.wavesurfer.load(audioUrl);
+
+        clearInterval(timer);
+      });
     }
   }
 };
@@ -326,5 +478,26 @@ export default {
 
 .input-speech-title {
   margin-bottom: 10px;
+}
+
+/* 
+  Waveform player
+  ---------------
+*/
+#waveform {
+  flex: 1;
+}
+
+.waveform-player-container {
+  display: flex;
+  align-items: center;
+}
+
+.player-current-time {
+  margin-right: 5px;
+}
+
+.player-duration {
+  margin-left: 5px;
 }
 </style>
