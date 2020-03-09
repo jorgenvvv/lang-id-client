@@ -358,6 +358,8 @@ export default {
       } else {
         this.fileIsInvalid = false;
         this.identificationResults = [];
+        if (!this.wavesurfer) this.createWaveSurfer();
+        this.wavesurfer.load(this.currentAudioURL);
         axios
           .get(this.currentAudioURL, { responseType: 'arraybuffer' })
           .then(response => {
@@ -373,7 +375,8 @@ export default {
       this.wavesurfer = WaveSurfer.create({
         container: '#waveform',
         responsive: true,
-        hideScrollbar: true
+        hideScrollbar: true,
+        height: 100
       });
 
       if (microphone)
