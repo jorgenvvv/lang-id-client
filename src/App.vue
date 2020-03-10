@@ -14,6 +14,7 @@
       <template slot="end">
         <b-navbar-dropdown right arrowless>
           <template slot="label">
+            <span class="is-uppercase">{{ $i18n.locale }}</span>
             <b-icon icon="web"></b-icon>
           </template>
           <b-navbar-item @click="changeLocale('en')">

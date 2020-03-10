@@ -72,22 +72,21 @@
               </h2>
             </div>
             <div v-if="isRecording || recording">
-              <div class="is-size-5">
-                <span v-if="isRecording">🔴</span>
+              <div v-if="isRecording" class="is-size-5">
+                <span>🔴</span>
                 <b-icon icon="microphone" class="vertical-icon"></b-icon
                 >{{ formattedRecordingDuration }}
-                <b-button v-if="isRecording" @click="stopRecording()">
+                <b-button outlined type="is-danger" @click="stopRecording()">
                   {{ $t('button.stop') }}
                 </b-button>
               </div>
             </div>
             <div v-if="(recording || file || inputFileURL) && !fileIsInvalid">
-              <b-button rounded @click="togglePlay()">
+              <b-button @click="togglePlay()">
                 <b-icon v-if="!isPlaying" icon="play"></b-icon>
                 <b-icon v-if="isPlaying" icon="pause"></b-icon>
               </b-button>
               <b-button
-                rounded
                 @click="
                   wavesurfer.stop();
                   isPlaying = false;
@@ -95,10 +94,10 @@
               >
                 <b-icon icon="stop"></b-icon>
               </b-button>
-              <b-button rounded @click="wavesurfer.skipBackward()">
+              <b-button @click="wavesurfer.skipBackward()">
                 <b-icon icon="rewind"></b-icon>
               </b-button>
-              <b-button rounded @click="wavesurfer.skipForward()">
+              <b-button @click="wavesurfer.skipForward()">
                 <b-icon icon="fast-forward"></b-icon>
               </b-button>
             </div>
@@ -115,6 +114,11 @@
                 class="is-size-5 player-duration"
               >
                 {{ wavesurferDuration }}
+              </div>
+              <div v-show="recording">
+                <a :title="$t('button.download_recording')" @click="downloadRecording()">
+                  <b-icon icon="download"></b-icon>
+                </a>
               </div>
             </div>
             <b-button
@@ -277,7 +281,10 @@ export default {
       }
 
       this.wavesurfer.microphone.start();
-      this.wavesurfer.microphone.on('deviceReady', this.processMicrophoneStream);
+      this.wavesurfer.microphone.on(
+        'deviceReady',
+        this.processMicrophoneStream
+      );
     },
 
     stopRecording() {
@@ -285,7 +292,10 @@ export default {
       this.mediaRecorder.stop();
       this.wavesurfer.microphone.stop();
       // Remove event, otherwise these events keep collecting and firing
-      this.wavesurfer.microphone.un('deviceReady', this.processMicrophoneStream);
+      this.wavesurfer.microphone.un(
+        'deviceReady',
+        this.processMicrophoneStream
+      );
     },
 
     tryAgain() {
@@ -444,6 +454,14 @@ export default {
 
         clearInterval(timer);
       });
+    },
+
+    downloadRecording() {
+      const link = document.createElement('a');
+      link.href = this.currentAudioURL;
+      link.setAttribute('download', this.$t('recording_file_name') + '.opus');
+      document.body.appendChild(link);
+      link.click();
     }
   }
 };
@@ -494,6 +512,8 @@ export default {
 .waveform-player-container {
   display: flex;
   align-items: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .player-current-time {
