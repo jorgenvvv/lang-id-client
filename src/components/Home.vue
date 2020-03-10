@@ -3,6 +3,9 @@
     <div class="container">
       <div class="columns">
         <div class="column has-text-centered">
+          <b-message has-icon v-if="noMicrophoneAccess" :title="$t('no_microphone_access')" type="is-warning" aria-close-label="Close message">
+            {{ $t('text.no_microphone_access') }}
+          </b-message>
           <h4 class="title is-4">{{ $t('language_identification') }}</h4>
           <div>
             <b-button
@@ -116,7 +119,10 @@
                 {{ wavesurferDuration }}
               </div>
               <div v-show="recording">
-                <a :title="$t('button.download_recording')" @click="downloadRecording()">
+                <a
+                  :title="$t('button.download_recording')"
+                  @click="downloadRecording()"
+                >
                   <b-icon icon="download"></b-icon>
                 </a>
               </div>
@@ -210,7 +216,8 @@ export default {
       wavesurfer: null,
       isPlaying: false,
       wavesurferCurrentTime: '0:00',
-      wavesurferDuration: '0:00'
+      wavesurferDuration: '0:00',
+      noMicrophoneAccess: false
     };
   },
 
@@ -281,21 +288,12 @@ export default {
       }
 
       this.wavesurfer.microphone.start();
-      this.wavesurfer.microphone.on(
-        'deviceReady',
-        this.processMicrophoneStream
-      );
     },
 
     stopRecording() {
       this.isRecording = false;
       this.mediaRecorder.stop();
       this.wavesurfer.microphone.stop();
-      // Remove event, otherwise these events keep collecting and firing
-      this.wavesurfer.microphone.un(
-        'deviceReady',
-        this.processMicrophoneStream
-      );
     },
 
     tryAgain() {
@@ -389,10 +387,20 @@ export default {
         height: 100
       });
 
-      if (microphone)
+      if (microphone) {
         this.wavesurfer
           .addPlugin(MicrophonePlugin.create())
           .initPlugin('microphone');
+
+        this.wavesurfer.microphone.on(
+          'deviceReady',
+          this.processMicrophoneStream
+        );
+
+        this.wavesurfer.microphone.on('deviceError', () => {
+          this.noMicrophoneAccess = true;
+        });
+      }
 
       this.wavesurfer.on('audioprocess', () => {
         this.wavesurferCurrentTime = this.formatTime(

@@ -14,6 +14,11 @@ export const messages = {
       invalid_file_type: 'Invalid file type'
     },
 
+    text: {
+      no_microphone_access:
+        "Your browser does not allow this app to use your device's micophone. If you want to create a recording for language identification then please grant this app access to your microphone in your browser settings."
+    },
+
     recording_file_name: 'recording',
 
     brand_text: 'WhatLangIs?',
@@ -22,7 +27,8 @@ export const messages = {
     allowed_file_extensions: 'Allowed file extensions',
     identification_results: 'Identification Results',
     input_speech: 'Input Speech',
-    file_url: 'File URL'
+    file_url: 'File URL',
+    no_microphone_access: 'Unable to access microphone'
   },
 
   // Estonian
@@ -40,6 +46,11 @@ export const messages = {
       invalid_file_type: 'Vigane failitüüp'
     },
 
+    text: {
+      no_microphone_access:
+        'Teie brauser ei luba antud rakendusel teie seadme mikrofoni kasutada. Juhul, kui soovite keeletuvastuseks lindistuse luua, lubage rakendusel juurdepääs mikrofonile brauseri seadetest.'
+    },
+
     recording_file_name: 'salvestis',
 
     brand_text: 'MisKeelOn?',
@@ -48,6 +59,7 @@ export const messages = {
     allowed_file_extensions: 'Lubatud failitüübid',
     input_speech: 'Tuvastatav kõnelõik',
     identification_results: 'Tulemused',
-    file_url: 'Faili URL'
+    file_url: 'Faili URL',
+    no_microphone_access: 'Puudub juurdepääs mikrofonile'
   }
 };
