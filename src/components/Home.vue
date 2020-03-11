@@ -3,7 +3,13 @@
     <div class="container">
       <div class="columns">
         <div class="column has-text-centered">
-          <b-message has-icon v-if="noMicrophoneAccess" :title="$t('no_microphone_access')" type="is-warning" aria-close-label="Close message">
+          <b-message
+            has-icon
+            v-if="noMicrophoneAccess"
+            :title="$t('no_microphone_access')"
+            type="is-warning"
+            aria-close-label="Close message"
+          >
             {{ $t('text.no_microphone_access') }}
           </b-message>
           <h4 class="title is-4">{{ $t('language_identification') }}</h4>
@@ -270,8 +276,15 @@ export default {
           });
         })
         .catch(error => {
-          // TODO: handle error
-          console.log('error', error);
+          if (error.response.data.error.code === 'FILE_TOO_LARGE') {
+            this.isLoadingResults = false;
+            this.$buefy.toast.open({
+              duration: 5000,
+              message: this.$t('error.file_too_large'),
+              position: 'is-bottom',
+              type: 'is-danger'
+            });
+          }
         });
     },
 

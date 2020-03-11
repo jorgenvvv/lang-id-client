@@ -11,7 +11,8 @@ export const messages = {
     },
 
     error: {
-      invalid_file_type: 'Invalid file type'
+      invalid_file_type: 'Invalid file type',
+      file_too_large: 'Uploadable file is too large'
     },
 
     text: {
@@ -43,7 +44,8 @@ export const messages = {
     },
 
     error: {
-      invalid_file_type: 'Vigane failitüüp'
+      invalid_file_type: 'Vigane failitüüp',
+      file_too_large: 'Üleslaetav fail on liiga suur'
     },
 
     text: {
