@@ -20,9 +20,11 @@ export const messages = {
         "Your browser does not allow this app to use your device's micophone. If you want to create a recording for language identification then please grant this app access to your microphone in your browser settings."
     },
 
+    app_title: 'Language Identification',
+
     recording_file_name: 'recording',
 
-    brand_text: 'WhatLangIs?',
+    brand_text: 'Spoken Language Identification',
     language_identification: 'Spoken Language Identification',
     or: 'or',
     allowed_file_extensions: 'Allowed file extensions',
@@ -53,9 +55,11 @@ export const messages = {
         'Teie brauser ei luba antud rakendusel teie seadme mikrofoni kasutada. Juhul, kui soovite keeletuvastuseks lindistuse luua, lubage rakendusel juurdepääs mikrofonile brauseri seadetest.'
     },
 
+    app_title: 'Keeletuvastus',
+
     recording_file_name: 'salvestis',
 
-    brand_text: 'MisKeelOn?',
+    brand_text: 'Kõneldava keele tuvastus',
     language_identification: 'Kõneldava keele tuvastus',
     or: 'või',
     allowed_file_extensions: 'Lubatud failitüübid',

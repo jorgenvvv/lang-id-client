@@ -3,7 +3,7 @@
     <b-navbar type="is-primary">
       <template slot="brand">
         <b-navbar-item tag="div">
-          <h4 class="brand title is-4 has-text-white">{{ $t('brand_text') }}</h4>
+          <span class="brand title is-5 has-text-white">{{ $t('brand_text') }}</span>
         </b-navbar-item>
       </template>
       <template slot="start">
@@ -12,16 +12,15 @@
         </b-navbar-item> -->
       </template>
       <template slot="end">
-        <b-navbar-dropdown right arrowless>
+        <b-navbar-dropdown right>
           <template slot="label">
             <span class="is-uppercase">{{ $i18n.locale }}</span>
-            <b-icon icon="web"></b-icon>
           </template>
-          <b-navbar-item @click="changeLocale('en')">
-            English
-          </b-navbar-item>
           <b-navbar-item @click="changeLocale('et')">
             Eesti
+          </b-navbar-item>
+          <b-navbar-item @click="changeLocale('en')">
+            English
           </b-navbar-item>
         </b-navbar-dropdown>
       </template>
@@ -38,6 +37,10 @@ export default {
   name: 'app',
   components: {
     Home
+  },
+
+  created() {
+    document.title = this.$t('app_title');
   },
 
   methods: {
@@ -100,11 +103,13 @@ $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: $primary;
 
+$navbar-breakpoint: $tablet;
+
 // Import Bulma and Buefy styles
 @import '~bulma';
 @import '~buefy/src/scss/buefy';
 
 .brand {
-  font-family: 'Dancing Script', cursive;
+  font-family: 'Graduate', 'Segoe UI', cursive;
 }
 </style>

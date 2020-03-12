@@ -12,17 +12,14 @@
           >
             {{ $t('text.no_microphone_access') }}
           </b-message>
-          <h4 class="title is-4">{{ $t('language_identification') }}</h4>
-          <div>
-            <b-button
-              type="is-primary"
-              size="is-large"
-              icon-left="microphone"
-              @click="recordClip()"
-            >
-              {{ $t('button.record_clip') }}
-            </b-button>
-            <div>
+          <div class="input-container">
+            <div class="record-button-wrapper">
+              <div class="record-button" @click="recordClip()">
+                <img :src="publicPath + 'assets/microphone.svg'" width="50"/>
+                <span>{{ $t('button.record_clip') }}</span>
+              </div>
+            </div>
+            <div class="or">
               {{ $t('or') }}
             </div>
             <b-field
@@ -206,6 +203,7 @@ export default {
 
   data() {
     return {
+      publicPath: process.env.BASE_URL,
       file: null,
       recording: null,
       currentAudioURL: null,
@@ -520,6 +518,39 @@ export default {
 
 .input-speech-title {
   margin-bottom: 10px;
+}
+
+.record-button {
+  cursor: pointer; 
+  background-color: #3273dc; 
+  width: 270px; 
+  border-radius: 5px; 
+  color: white; 
+  font-size: 24px; 
+  display: flex; 
+  align-items: center; 
+  padding: 5px; 
+}
+
+.record-button:hover {
+  background-color: #276cda;
+}
+
+.record-button:active {
+  background-color: #2466d1;
+}
+
+.record-button-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.input-container {
+  margin-top: 35px;
+}
+
+.or {
+  margin: 10px 0 10px 0;
 }
 
 /* 
