@@ -17,7 +17,9 @@ export const messages = {
 
     text: {
       no_microphone_access:
-        "Your browser does not allow this app to use your device's micophone. If you want to create a recording for language identification then please grant this app access to your microphone in your browser settings."
+        "Your browser does not allow this app to use your device's micophone. If you want to create a recording for language identification then please grant this app access to your microphone in your browser settings.",
+      about: "This app can identify spoken language from speech. It is possible to use your device's microphone or to upload a file to be identified.",
+      available_languages: 'Currently, the recognized languages are: {languages}.'
     },
 
     app_title: 'Language Identification',
@@ -31,7 +33,9 @@ export const messages = {
     identification_results: 'Identification Results',
     input_speech: 'Input Speech',
     file_url: 'File URL',
-    no_microphone_access: 'Unable to access microphone'
+    no_microphone_access: 'Unable to access microphone',
+    about: 'About',
+    about_title: 'Language Identification App'
   },
 
   // Estonian
@@ -52,7 +56,9 @@ export const messages = {
 
     text: {
       no_microphone_access:
-        'Teie brauser ei luba antud rakendusel teie seadme mikrofoni kasutada. Juhul, kui soovite keeletuvastuseks lindistuse luua, lubage rakendusel juurdepääs mikrofonile brauseri seadetest.'
+        'Teie brauser ei luba antud rakendusel teie seadme mikrofoni kasutada. Juhul, kui soovite keeletuvastuseks lindistuse luua, lubage rakendusel juurdepääs mikrofonile brauseri seadetest.',
+      about: 'See rakendus võimaldab tuvastada kõneldavat keelt. Sisendina on võimalik kasutada enda seadme mikrofoni või üleslaetavat faili.',
+      available_languages: 'Hetkel on tuvastatavateks keelteks: {languages}.'
     },
 
     app_title: 'Keeletuvastus',
@@ -66,6 +72,8 @@ export const messages = {
     input_speech: 'Tuvastatav kõnelõik',
     identification_results: 'Tulemused',
     file_url: 'Faili URL',
-    no_microphone_access: 'Puudub juurdepääs mikrofonile'
+    no_microphone_access: 'Puudub juurdepääs mikrofonile',
+    about: 'Info',
+    about_title: 'Kõneldava keele tuvastusrakendus'
   }
 };

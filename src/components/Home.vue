@@ -531,13 +531,12 @@ export default {
 .record-button {
   cursor: pointer; 
   background-color: #3273dc; 
-  width: 270px; 
   border-radius: 5px; 
   color: white; 
   font-size: 24px; 
   display: flex; 
   align-items: center; 
-  padding: 5px; 
+  padding: 5px 15px 5px 5px;
 }
 
 .record-button:hover {
