@@ -158,7 +158,7 @@
             >
               <div class="has-text-centered">
                 <p class="is-size-5">
-                  {{ identificationResults[0].language.name }}
+                  {{ getCorrectLanguageNameValue(identificationResults[0].language) }}
                 </p>
                 <p>
                   {{ formatPercentage(identificationResults[0].probability) }}%
@@ -175,7 +175,7 @@
           >
             <b-notification class="additional-result-box" :closable="false">
               <div class="has-text-centered">
-                <p>{{ result.language.name }}</p>
+                <p>{{ getCorrectLanguageNameValue(result.language) }}</p>
                 <p>{{ formatPercentage(result.probability) }}%</p>
               </div>
             </b-notification>
@@ -481,6 +481,14 @@ export default {
       link.setAttribute('download', this.$t('recording_file_name') + '.opus');
       document.body.appendChild(link);
       link.click();
+    },
+
+    getCorrectLanguageNameValue(languageObject) {
+      if (this.$i18n.locale === 'et') {
+        return languageObject.etName;
+      } 
+  
+      return languageObject.name;
     }
   }
 };
