@@ -15,7 +15,7 @@
           <div class="input-container">
             <div class="record-button-wrapper">
               <div class="record-button" @click="recordClip()">
-                <img :src="publicPath + 'assets/microphone.svg'" width="50"/>
+                <img :src="publicPath + 'assets/microphone.svg'" width="50" />
                 <span>{{ $t('button.record_clip') }}</span>
               </div>
             </div>
@@ -130,10 +130,16 @@
                 </a>
               </div>
             </div>
+            <b-switch
+              v-if="identificationResultsPredictions.length"
+              :value="showAttention"
+              @input="toggleAttention()"
+              >{{ $t('button.show_attention') }}</b-switch
+            >
             <b-button
               type="is-primary"
               v-if="
-                !identificationResults.length &&
+                !identificationResultsPredictions.length &&
                   (file || recording) &&
                   !fileIsInvalid
               "
@@ -143,8 +149,11 @@
           </div>
         </div>
       </div>
-      <hr v-if="identificationResults.length" />
-      <div ref="identificationResults" v-if="identificationResults.length">
+      <hr v-if="identificationResultsPredictions.length" />
+      <div
+        ref="identificationResults"
+        v-if="identificationResultsPredictions.length"
+      >
         <h2 class="subtitle has-text-centered">
           {{ $t('identification_results') }}
         </h2>
@@ -158,16 +167,24 @@
             >
               <div class="has-text-centered">
                 <p class="is-size-5">
-                  {{ getCorrectLanguageNameValue(identificationResults[0].language) }}
+                  {{
+                    getCorrectLanguageNameValue(
+                      identificationResultsPredictions[0].language
+                    )
+                  }}
                 </p>
                 <p>
-                  {{ formatPercentage(identificationResults[0].probability) }}%
+                  {{
+                    formatPercentage(
+                      identificationResultsPredictions[0].probability
+                    )
+                  }}%
                 </p>
               </div>
             </b-notification>
           </div>
         </div>
-        <div class="columns" v-if="identificationResults.length">
+        <div class="columns" v-if="identificationResultsPredictions.length">
           <div
             v-for="result in additionalIdentificationResults"
             :key="result.language.name"
@@ -197,6 +214,8 @@
 import axios from 'axios';
 import WaveSurfer from 'wavesurfer.js';
 import MicrophonePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.microphone';
+import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions';
+import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor';
 
 export default {
   name: 'Home',
@@ -207,7 +226,7 @@ export default {
       file: null,
       recording: null,
       currentAudioURL: null,
-      identificationResults: [],
+      identificationResults: null,
       isRecording: false,
       mediaRecorder: null,
       recordingStartTime: null,
@@ -221,7 +240,8 @@ export default {
       isPlaying: false,
       wavesurferCurrentTime: '0:00',
       wavesurferDuration: '0:00',
-      noMicrophoneAccess: false
+      noMicrophoneAccess: false,
+      showAttention: true
     };
   },
 
@@ -237,7 +257,7 @@ export default {
     },
 
     additionalIdentificationResults() {
-      let modifiedResults = [...this.identificationResults];
+      let modifiedResults = [...this.identificationResults.predictions];
       modifiedResults.shift();
 
       return modifiedResults;
@@ -245,6 +265,13 @@ export default {
 
     allowedFileExtensionsString() {
       return this.allowedFileExtensions.join(', ');
+    },
+
+    identificationResultsPredictions() {
+      if (this.identificationResults && this.identificationResults.predictions)
+        return this.identificationResults.predictions;
+
+      return [];
     }
   },
 
@@ -268,6 +295,10 @@ export default {
         .then(response => {
           this.identificationResults = response.data;
           this.isLoadingResults = false;
+
+          if (this.showAttention) {
+            this.highlightAttention();
+          }
 
           this.$nextTick().then(() => {
             this.$refs.identificationResults.scrollIntoView();
@@ -307,10 +338,6 @@ export default {
       this.wavesurfer.microphone.stop();
     },
 
-    tryAgain() {
-      location.reload();
-    },
-
     formatPercentage(percentage) {
       return parseFloat(percentage * 100).toFixed(2);
     },
@@ -336,9 +363,12 @@ export default {
     },
 
     reset() {
+      if (this.wavesurfer) {
+        this.wavesurfer.regions.clear();
+      }
       this.recording = null;
       this.file = null;
-      this.identificationResults = [];
+      this.identificationResults = null;
     },
 
     fileInputSelected() {
@@ -376,7 +406,7 @@ export default {
         this.fileIsInvalid = true;
       } else {
         this.fileIsInvalid = false;
-        this.identificationResults = [];
+        this.identificationResults = null;
         if (!this.wavesurfer) this.createWaveSurfer();
         this.wavesurfer.load(this.currentAudioURL);
         axios
@@ -395,7 +425,22 @@ export default {
         container: '#waveform',
         responsive: true,
         hideScrollbar: true,
-        height: 100
+        height: 100,
+        plugins: [
+          CursorPlugin.create({
+            showTime: true,
+            opacity: 1,
+            customShowTimeStyle: {
+              'background-color': 'hsl(0, 0%, 96%)',
+              'color': '#000',
+              'padding': '3px',
+              'font-size': '12px',
+              'border-radius': '5px',
+              'margin-left': '2px'
+            }
+          }),
+          RegionsPlugin.create()
+        ]
       });
 
       if (microphone) {
@@ -486,9 +531,35 @@ export default {
     getCorrectLanguageNameValue(languageObject) {
       if (this.$i18n.locale === 'et') {
         return languageObject.etName;
-      } 
-  
+      }
+
       return languageObject.name;
+    },
+
+    toggleAttention() {
+      if (this.showAttention) {
+        this.showAttention = false;
+        this.wavesurfer.regions.clear();
+      } else {
+        this.showAttention = true;
+        this.highlightAttention();
+      }
+    },
+
+    highlightAttention() {
+      const attentionSegmentLength =
+        this.wavesurfer.getDuration() /
+        this.identificationResults.attention_total;
+
+      this.identificationResults.attention_indices.forEach(indice => {
+        this.wavesurfer.regions.add({
+          start: indice * attentionSegmentLength,
+          end: indice * attentionSegmentLength + attentionSegmentLength,
+          drag: false,
+          resize: false,
+          color: 'hsla(204, 86%, 53%, 0.3)'
+        });
+      });
     }
   }
 };
@@ -529,13 +600,13 @@ export default {
 }
 
 .record-button {
-  cursor: pointer; 
-  background-color: #3273dc; 
-  border-radius: 5px; 
-  color: white; 
-  font-size: 24px; 
-  display: flex; 
-  align-items: center; 
+  cursor: pointer;
+  background-color: #3273dc;
+  border-radius: 5px;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
   padding: 5px 15px 5px 5px;
 }
 
@@ -566,6 +637,7 @@ export default {
 */
 #waveform {
   flex: 1;
+  position: relative;
 }
 
 .waveform-player-container {

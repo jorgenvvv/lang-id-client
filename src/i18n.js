@@ -7,7 +7,8 @@ export const messages = {
       identify_language: 'Identify Language',
       stop: 'Stop',
       insert_file_url: 'Insert a file URL',
-      download_recording: 'Download recording'
+      download_recording: 'Download recording',
+      show_attention: 'Show attention'
     },
 
     error: {
@@ -46,7 +47,8 @@ export const messages = {
       identify_language: 'Tuvasta keel',
       stop: 'Lõpeta',
       insert_file_url: 'Sisestage faili URL',
-      download_recording: 'Lae salvestis alla'
+      download_recording: 'Lae salvestis alla',
+      show_attention: "Näita attention'it"
     },
 
     error: {
