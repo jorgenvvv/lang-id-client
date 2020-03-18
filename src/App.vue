@@ -2,8 +2,11 @@
   <div id="app">
     <b-navbar type="is-primary">
       <template slot="brand">
-        <b-navbar-item tag="router-link" to="/">
+        <b-navbar-item class="is-hidden-mobile" tag="router-link" to="/">
           <span class="brand title is-5 has-text-white">{{ $t('brand_text') }}</span>
+        </b-navbar-item>
+        <b-navbar-item class="is-hidden-tablet" tag="router-link" to="/">
+          <span class="brand title is-6 has-text-white">{{ $t('brand_text') }}</span>
         </b-navbar-item>
       </template>
       <template slot="start">
