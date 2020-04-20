@@ -36,7 +36,12 @@ export default {
       if (this.$i18n.locale === 'et')
         field = 'etName'
 
-      this.availableLanguages.forEach(language => result.push(language[field]));
+      this.availableLanguages.forEach(language => {
+        if (field in language)
+          result.push(language[field]);
+        else
+          result.push(language['name'])
+      });
 
       return result.join(', ');
     }

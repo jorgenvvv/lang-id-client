@@ -529,7 +529,7 @@ export default {
     },
 
     getCorrectLanguageNameValue(languageObject) {
-      if (this.$i18n.locale === 'et') {
+      if (this.$i18n.locale === 'et' && languageObject.hasOwnProperty('etName')) {
         return languageObject.etName;
       }
 
