@@ -5,9 +5,14 @@
       <p>
         {{ $t('text.about') }}
       </p>
-      <p>
-        {{ $t('text.available_languages', { languages: availableLanguagesList }) }}
+      <p class="currently-supported-languages">
+        {{ $t('currently_supported_languages') }}:
       </p>
+      <div>
+        <ol>
+          <li v-for="language in availableLanguagesTranslated" :key="language">{{ language }}</li>
+        </ol>
+      </div>
     </div>
   </section>
 </template>
@@ -21,7 +26,7 @@ export default {
   data() {
     return {
       availableLanguages: []
-    }
+    };
   },
 
   created() {
@@ -29,31 +34,42 @@ export default {
   },
 
   computed: {
-    availableLanguagesList() {
+    availableLanguagesTranslated() {
       let result = [];
       let field = 'name';
 
-      if (this.$i18n.locale === 'et')
-        field = 'etName'
+      // if (this.$i18n.locale === 'et') field = 'etName';
 
       this.availableLanguages.forEach(language => {
-        if (field in language)
-          result.push(language[field]);
-        else
-          result.push(language['name'])
+        if (field in language) result.push(language[field]);
+        else result.push(language['name']);
       });
 
-      return result.join(', ');
+      return result.sort();
     }
   },
 
   methods: {
     loadAvailableLanguages() {
-      axios.get(process.env.VUE_APP_API_URL + '/api/languages')
-      .then(response => {
-        this.availableLanguages = response.data;
-      })
+      axios
+        .get(process.env.VUE_APP_API_URL + '/api/languages')
+        .then(response => {
+          this.availableLanguages = response.data;
+        });
     }
   }
 };
 </script>
+<style scoped>
+ol, ul {
+    -webkit-column-count: 3; -webkit-column-gap:20px;
+    -moz-column-count:3; -moz-column-gap:20px;
+    -o-column-count: 3; -o-column-gap:20px;
+    column-count: 3; column-gap:20px;
+    list-style-position: inside;
+}
+
+.currently-supported-languages {
+  margin-top: 10px;
+}
+</style>

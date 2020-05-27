@@ -19,7 +19,7 @@ export const messages = {
     text: {
       no_microphone_access:
         "Your browser does not allow this app to use your device's micophone. If you want to create a recording for language identification then please grant this app access to your microphone in your browser settings.",
-      about: "This app can identify spoken language from speech. It is possible to use your device's microphone or to upload a file to be identified.",
+      about: "This app can identify spoken language from speech. It is possible to use your device's microphone or to upload a file to be identified. Currently 107 languages are supported.",
       available_languages: 'Currently, the recognized languages are: {languages}.'
     },
 
@@ -36,7 +36,8 @@ export const messages = {
     file_url: 'File URL',
     no_microphone_access: 'Unable to access microphone',
     about: 'About',
-    about_title: 'Language Identification App'
+    about_title: 'Language Identification App',
+    currently_supported_languages: 'Currently supported languages'
   },
 
   // Estonian
@@ -59,7 +60,7 @@ export const messages = {
     text: {
       no_microphone_access:
         'Teie brauser ei luba antud rakendusel teie seadme mikrofoni kasutada. Juhul, kui soovite keeletuvastuseks lindistuse luua, lubage rakendusel juurdepääs mikrofonile brauseri seadetest.',
-      about: 'See rakendus võimaldab tuvastada kõneldavat keelt. Sisendina on võimalik kasutada enda seadme mikrofoni või üleslaetavat faili.',
+      about: 'See rakendus võimaldab tuvastada kõneldavat keelt. Sisendina on võimalik kasutada enda seadme mikrofoni või üleslaetavat faili. Hetkel on toetatud 107 erinevat keelt.',
       available_languages: 'Hetkel on tuvastatavateks keelteks: {languages}.'
     },
 
@@ -76,6 +77,7 @@ export const messages = {
     file_url: 'Faili URL',
     no_microphone_access: 'Puudub juurdepääs mikrofonile',
     about: 'Info',
-    about_title: 'Kõneldava keele tuvastusrakendus'
+    about_title: 'Kõneldava keele tuvastusrakendus',
+    currently_supported_languages: 'Hetkel toetatud keeled'
   }
 };
