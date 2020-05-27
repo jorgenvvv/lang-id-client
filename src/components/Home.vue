@@ -50,7 +50,7 @@
                 <b-icon type="is-danger" icon="alert-circle-outline"></b-icon>
               </b-tooltip>
             </b-field>
-            <div class="file-url-field column is-4 is-offset-4 is-size-7">
+            <!-- <div class="file-url-field column is-4 is-offset-4 is-size-7">
               <a v-if="!showFileURLInput" @click="showFileURLInput = true">{{
                 $t('button.insert_file_url')
               }}</a>
@@ -64,7 +64,7 @@
                   @input="fileUrlInput()"
                 ></b-input>
               </b-field>
-            </div>
+            </div> -->
             <div class="has-text-grey-light is-size-7">
               {{ $t('allowed_file_extensions') }}:
               {{ allowedFileExtensionsString }}.
