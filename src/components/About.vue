@@ -38,11 +38,11 @@ export default {
       let result = [];
       let field = 'name';
 
-      // if (this.$i18n.locale === 'et') field = 'etName';
+      if (this.$i18n.locale === 'et') field = 'etName';
 
       this.availableLanguages.forEach(language => {
-        if (field in language) result.push(language[field]);
-        else result.push(language['name']);
+        if (field in language) result.push(this.formatEtLang(language[field]));
+        else result.push(this.formatEtLang(language['name']));
       });
 
       return result.sort();
@@ -56,6 +56,10 @@ export default {
         .then(response => {
           this.availableLanguages = response.data;
         });
+    },
+
+    formatEtLang(languageName) {
+      return languageName.replace('keel', '').trim();
     }
   }
 };
