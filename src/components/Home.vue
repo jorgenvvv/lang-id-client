@@ -26,8 +26,8 @@
               class="file-select-field file is-centered"
               position="is-centered"
             >
-              <b-upload v-model="file" @input="fileInputSelected()">
-                <a class="button is-primary is-outlined" @click="reset()">
+              <b-upload v-model="file" @input="fileInputSelected()" :disabled="isRecording">
+                <a class="button is-primary is-outlined" @click="reset()" :disabled="isRecording">
                   <b-icon icon="paperclip"></b-icon>
                   <span>{{ $t('button.select_file') }}</span>
                 </a>
@@ -65,11 +65,17 @@
                 ></b-input>
               </b-field>
             </div> -->
-            <div class="has-text-grey-light is-size-7">
+            <div class="allowed-file-extensions has-text-grey-light is-size-7">
               {{ $t('allowed_file_extensions') }}:
               {{ allowedFileExtensionsString }}.
             </div>
+            <div class="start-again" v-if="recording || file || isRecording">
+              <b-button icon-left="restart" size="is-small" outlined @click="resetAll">
+                {{ $t('button.reset_all') }}
+              </b-button>
+            </div>
           </div>
+
           <div>
             <div v-if="(recording || file || isRecording) && !fileIsInvalid">
               <hr />
@@ -107,6 +113,8 @@
                 <b-icon icon="fast-forward"></b-icon>
               </b-button>
             </div>
+
+            <!-- Waveform player -->
             <div class="waveform-player-container">
               <div
                 v-show="(recording || file || inputFileURL) && !fileIsInvalid"
@@ -114,7 +122,7 @@
               >
                 {{ wavesurferCurrentTime }}
               </div>
-              <div id="waveform"></div>
+              <div id="waveform" v-show="(recording || file || inputFileURL | isRecording) && !fileIsInvalid"></div>
               <div
                 v-show="(recording || file || inputFileURL) && !fileIsInvalid"
                 class="is-size-5 player-duration"
@@ -130,6 +138,7 @@
                 </a>
               </div>
             </div>
+
             <b-switch
               v-if="identificationResultsPredictions.length"
               :value="showAttention"
@@ -149,6 +158,8 @@
           </div>
         </div>
       </div>
+
+      <!-- Identification results -->
       <hr v-if="identificationResultsPredictions.length" />
       <div
         ref="identificationResults"
@@ -241,7 +252,8 @@ export default {
       wavesurferCurrentTime: '0:00',
       wavesurferDuration: '0:00',
       noMicrophoneAccess: false,
-      showAttention: true
+      showAttention: true,
+      resetAllData: false
     };
   },
 
@@ -509,14 +521,18 @@ export default {
       });
 
       this.mediaRecorder.addEventListener('stop', () => {
-        const audioBlob = new Blob(audioChunks);
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        this.currentAudioURL = audioUrl;
-        this.recording = audioBlob;
-        this.wavesurfer.load(audioUrl);
-
-        clearInterval(timer);
+        if (!this.resetAllData) {
+          const audioBlob = new Blob(audioChunks);
+          const audioUrl = URL.createObjectURL(audioBlob);
+  
+          this.currentAudioURL = audioUrl;
+          this.recording = audioBlob;
+          this.wavesurfer.load(audioUrl);
+  
+          clearInterval(timer);
+        } else {
+          this.resetAllData = false;  
+        }
       });
     },
 
@@ -560,6 +576,34 @@ export default {
           color: 'hsla(204, 86%, 53%, 0.3)'
         });
       });
+    },
+
+    resetAll() {
+      this.resetAllData = true;
+
+      if (this.mediaRecorder && this.isRecording) {
+        this.stopRecording();
+      }
+      
+      this.wavesurfer.destroy();
+
+      this.identificationResults = null;
+      this.isRecording = false;
+      this.recordingStartTime = null;
+      this.recordingDuration = null;
+      this.isLoadingResults = false;
+      this.fileIsInvalid = false;
+      this.showFileURLInput = false;
+      this.inputFileURL = null;
+      this.wavesurfer = null;
+      this.isPlaying = false;
+      this.wavesurferCurrentTime = '0:00';
+      this.wavesurferDuration = '0:00';
+      this.showAttention = true;
+      this.mediaRecorder = null;
+      this.file = null;
+      this.recording = null;
+      this.currentAudioURL = null;
     }
   }
 };
@@ -653,5 +697,13 @@ export default {
 
 .player-duration {
   margin-left: 5px;
+}
+
+.start-again {
+  margin-top: 10px;
+}
+
+.allowed-file-extensions {
+  margin-top: 5px;
 }
 </style>

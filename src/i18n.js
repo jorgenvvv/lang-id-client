@@ -8,7 +8,8 @@ export const messages = {
       stop: 'Stop',
       insert_file_url: 'Insert a file URL',
       download_recording: 'Download recording',
-      show_attention: 'Show attention'
+      show_attention: 'Show attention',
+      reset_all: 'Reset all'
     },
 
     error: {
@@ -49,7 +50,8 @@ export const messages = {
       stop: 'Lõpeta',
       insert_file_url: 'Sisestage faili URL',
       download_recording: 'Lae salvestis alla',
-      show_attention: "Näita attention'it"
+      show_attention: "Näita attention'it",
+      reset_all: 'Puhasta kõik'
     },
 
     error: {
